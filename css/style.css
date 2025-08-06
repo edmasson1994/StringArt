@@ -1,0 +1,466 @@
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 1rem;
+    background-color: #f0f2f5;
+    height: 100vh;
+    box-sizing: border-box;
+}
+
+.container {
+    display: flex;
+    width: 90%;
+    max-width: 1400px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    height: 100%;
+    margin: 0 auto;
+}
+
+.controls {
+    flex: 1;
+    padding: 1.5rem;
+    border-right: 1px solid #ddd;
+    min-width: 350px;
+    overflow-y: auto;
+}
+
+.display {
+    flex: 2;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    background-color: #f9f9f9;
+    overflow-y: auto;
+}
+
+h2 {
+    font-size: 1.1rem;
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.5rem;
+}
+
+h3 {
+    font-size: 1rem;
+    margin-top: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.control-group {
+    margin-bottom: 1rem;
+}
+
+label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #555;
+    font-size: 0.85rem;
+}
+
+.slider-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.25rem;
+}
+
+.slider-container > label {
+    width: 120px;
+    flex-shrink: 0;
+    margin-bottom: 0;
+}
+
+input[type="range"] {
+    flex-grow: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    background: #ddd;
+    border-radius: 5px;
+    outline: none;
+    opacity: 0.7;
+    transition: opacity .2s;
+}
+
+input[type="range"]:hover {
+    opacity: 1;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: #007bff;
+    cursor: pointer;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 2px rgba(0,0,0,0.3);
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: #007bff;
+    cursor: pointer;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 2px rgba(0,0,0,0.3);
+}
+
+.slider-value {
+    font-weight: 500;
+    min-width: 40px;
+    text-align: center;
+    color: #333;
+    background-color: #e9ecef;
+    padding: 0.2rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    border: 1px solid #ddd;
+    -moz-appearance: textfield; /* Firefox */
+}
+
+.slider-value::-webkit-outer-spin-button,
+.slider-value::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.styled-select {
+    flex-grow: 1;
+    padding: 0.4rem;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    background-color: #e9ecef;
+    font-weight: 500;
+    font-size: 0.8rem;
+    color: #333;
+}
+
+.file-input-wrapper {
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+    cursor: pointer;
+    padding: 0.6rem 1.2rem;
+    background-color: #007bff;
+    color: white;
+    border-radius: 5px;
+    font-weight: 600;
+    text-align: center;
+    transition: background-color 0.2s;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.file-input-wrapper:hover {
+    background-color: #0056b3;
+}
+
+.file-input-wrapper input[type="file"] {
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+canvas {
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    margin-bottom: 2rem;
+    max-width: 100%;
+    height: auto;
+    cursor: grab;
+}
+
+canvas:active {
+    cursor: grabbing;
+}
+
+button {
+    width: 100%;
+    padding: 0.6rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+    margin-top: 0.5rem;
+}
+
+#generateBtn {
+    background-color: #28a745;
+    color: white;
+}
+
+#generateBtn:hover:not(:disabled) {
+    background-color: #218838;
+}
+
+#generateBtn:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.download-buttons button {
+    background-color: #6c757d;
+    color: white;
+}
+
+.download-buttons button:hover {
+    background-color: #5a6268;
+}
+
+#generation-progress-container {
+    /* Hidden by default, shown during generation */
+}
+
+.progress-bar-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+#generationProgress {
+    width: 100%;
+    height: 12px;
+}
+
+.generation-buttons {
+    display: flex;
+    gap: 1rem;
+}
+
+.generation-buttons button {
+    flex: 1; /* Make buttons take equal width */
+}
+
+#pauseResumeBtn {
+    background-color: #ffc107;
+    color: #212529;
+}
+#pauseResumeBtn:hover:not(:disabled) {
+    background-color: #e0a800;
+}
+
+#stopBtn {
+    background-color: #dc3545;
+    color: white;
+}
+#stopBtn:hover:not(:disabled) {
+    background-color: #c82333;
+}
+
+#validation-message {
+    color: #dc3545;
+    font-weight: 600;
+    margin-top: 0.75rem;
+    min-height: 20px;
+}
+
+#paletteDisplay {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+
+.palette-swatch {
+    width: 100%;
+    height: 100%;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+.palette-swatch-container {
+    position: relative;
+    width: 24px;
+    height: 24px;
+}
+
+.remove-swatch-btn {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 16px;
+    height: 16px;
+    background-color: #dc3545;
+    color: white;
+    border-radius: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    line-height: 16px;
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.palette-swatch-container:hover .remove-swatch-btn {
+    display: flex;
+}
+
+input[type="color"] {
+    width: 100%;
+    height: 40px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 0 5px;
+    box-sizing: border-box;
+}
+
+#customPalettePickerContainer input[type="color"] {
+    width: 40px;
+    height: 40px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 0;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-color: transparent;
+}
+#customPalettePickerContainer input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+#customPalettePickerContainer input[type="color"]::-webkit-color-swatch {
+    border: none;
+    border-radius: 4px;
+}
+#customPalettePickerContainer input[type="color"]::-moz-color-swatch {
+    border: none;
+    border-radius: 4px;
+}
+
+#addCustomColorBtn {
+    width: 30px;
+    height: 30px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    padding: 0;
+    line-height: 30px;
+    flex-shrink: 0;
+    background-color: #28a745;
+    color: white;
+}
+
+#addCustomColorBtn:hover {
+    background-color: #218838;
+}
+
+.compact-background-controls {
+    display: flex;
+    gap: 0.5rem;
+    align-items: stretch;
+    margin-bottom: 0;
+}
+.compact-background-controls input[type="color"] {
+    flex: 0 0 50px; /* Don't grow, don't shrink, base width 50px */
+    height: 38px; /* Match button height more precisely */
+    padding: 0;
+    border: 1px solid #ccc;
+    border-radius: 5px; /* Match button border radius */
+    cursor: pointer;
+    margin: 0;
+    vertical-align: top;
+    box-sizing: border-box;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+/* For WebKit browsers (Chrome, Safari) */
+.compact-background-controls input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+}
+
+.compact-background-controls input[type="color"]::-webkit-color-swatch {
+    border: none;
+    border-radius: 4px;
+}
+
+.compact-background-controls button {
+    flex: 1;
+    height: 38px; /* Match color picker height */
+    margin: 0; /* Remove default button margin */
+    padding: 0.6rem;
+    border-radius: 5px;
+}
+
+/* Advanced toggle section styling */
+.advanced-toggle {
+    user-select: none;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.5rem;
+}
+
+.advanced-toggle:hover {
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    padding: 0.25rem;
+    margin: -0.25rem;
+    margin-bottom: 0.75rem;
+}
+
+.advanced-toggle h3 {
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 0;
+}
+
+/* Remove margin from binnedPrecisionText to reduce spacing */
+#binnedPrecisionText {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+/* Reduce spacing in background color control group */
+#backgroundColorGroup {
+    margin-bottom: 0.3rem !important;
+}
+
+/* Reduce spacing for Thread Palette section immediately after background */
+#backgroundColorGroup + .control-group {
+    margin-top: 0.3rem !important;
+}
+
+/* Reduce spacing between generate and download buttons */
+.download-buttons {
+    margin-top: -0.5rem !important;
+    margin-bottom: 0 !important;
+}
+
+@media (max-width: 1200px) {
+    .container {
+        flex-direction: column;
+        width: 95%;
+        height: auto; /* Allow container to grow on small screens */
+    }
+    .controls {
+        border-right: none;
+        border-bottom: 1px solid #ddd;
+    }
+} 
