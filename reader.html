@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>String Art CSV Reader</title>
+    <style>
+        :root {
+            --primary-bg: #f4f7f9;
+            --secondary-bg: #ffffff;
+            --text-color: #333;
+            --highlight-color: #007bff;
+            --highlight-text: #ffffff;
+            --border-color: #e0e0e0;
+            --header-bg: #e9ecef;
+        }
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+        }
+        .container {
+            width: 100%;
+            height: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--secondary-bg);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            padding: 20px;
+        }
+        .main-content {
+            display: flex;
+            flex-grow: 1;
+            min-height: 0;
+        }
+        .controls-panel {
+            flex: 0 0 300px;
+            padding: 20px;
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+        }
+        .table-panel {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+        h2, h3 {
+            margin-top: 0;
+            color: var(--highlight-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+        .control-group {
+            margin-bottom: 25px;
+        }
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+            cursor: pointer;
+        }
+        .btn {
+            border: 2px solid var(--highlight-color);
+            color: var(--highlight-color);
+            background-color: transparent;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            width: 100%;
+            text-align: center;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+        .btn:hover {
+            background-color: var(--highlight-color);
+            color: var(--highlight-text);
+        }
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        .playback-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        #playPauseBtn {
+            grid-column: 1 / -1;
+        }
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+        .checkbox-group input {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
+        }
+        #params-display {
+            font-size: 0.8rem;
+            background: var(--primary-bg);
+            padding: 10px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .table-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            border-top: 1px solid var(--border-color);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        thead th {
+            background-color: var(--header-bg);
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+        tbody tr:nth-child(even) {
+            background-color: var(--primary-bg);
+        }
+        tbody tr.highlight {
+            background-color: var(--highlight-color) !important;
+            color: var(--highlight-text);
+            font-weight: bold;
+        }
+        tbody tr {
+            cursor: pointer;
+        }
+        tbody tr:hover {
+            background-color: #f0f0f0;
+        }
+        .status-message {
+            padding: 20px;
+            text-align: center;
+            color: #888;
+            font-size: 1.2rem;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #table-area {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        #table-area > .status-message {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+            color: #888;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="main-content">
+        <div class="controls-panel">
+            <h2>Controls</h2>
+
+            <div class="control-group">
+                <h3>Load Instructions</h3>
+                <div class="file-input-wrapper">
+                    <div class="btn">Select CSV File</div>
+                    <input type="file" id="csvFileInput" accept=".csv">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Speech Playback</h3>
+                <div class="playback-controls">
+                    <button id="playPauseBtn" class="btn" disabled>Play</button>
+                    <button id="prevBtn" class="btn" disabled>Previous</button>
+                    <button id="nextBtn" class="btn" disabled>Next</button>
+                    <button id="repeatBtn" class="btn" disabled>Repeat</button>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h3>Spoken Columns</h3>
+                <div id="columnsToSpeak" class="checkbox-group">
+                    <!-- Checkboxes will be generated here -->
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Parameters</h3>
+                <div id="params-display">
+                    No file loaded.
+                </div>
+            </div>
+        </div>
+        <div class="table-panel">
+            <div id="table-area">
+                <div class="status-message">
+                    <p>Load a CSV file to begin.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // DOM Elements
+    const csvFileInput = document.getElementById('csvFileInput');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const repeatBtn = document.getElementById('repeatBtn');
+    const columnsToSpeakDiv = document.getElementById('columnsToSpeak');
+    const paramsDisplay = document.getElementById('params-display');
+    const tableArea = document.getElementById('table-area');
+
+    // State
+    let instructions = [];
+    let headers = [];
+    let currentStepIndex = 0;
+    let isPlaying = false;
+    const synth = window.speechSynthesis;
+    let utterance = null;
+    let recognition; // For voice control
+    let recognitionManuallyStopped = false;
+
+    function resetState() {
+        instructions = [];
+        headers = [];
+        currentStepIndex = 0;
+        isPlaying = false;
+        synth.cancel();
+        if (recognition) {
+            recognitionManuallyStopped = true;
+            recognition.stop();
+        }
+        playPauseBtn.textContent = 'Play';
+        tableArea.innerHTML = `
+            <div class="status-message">
+                <p>Load a CSV file to begin.</p>
+            </div>`;
+        paramsDisplay.textContent = 'No file loaded.';
+        columnsToSpeakDiv.innerHTML = '';
+        disablePlaybackControls(true);
+    }
+
+    function disablePlaybackControls(disabled) {
+        playPauseBtn.disabled = disabled;
+        prevBtn.disabled = disabled;
+        nextBtn.disabled = disabled;
+        repeatBtn.disabled = disabled;
+    }
+
+    // File Handling & Parsing
+    csvFileInput.addEventListener('change', (event) => {
+        resetState();
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const content = e.target.result;
+            parseCSV(content);
+            renderTable();
+            generateColumnCheckboxes();
+            disablePlaybackControls(false);
+            if (recognition) {
+                try { 
+                    recognitionManuallyStopped = false;
+                    recognition.start(); 
+                } catch(e) { console.error("Recognition start error:", e); }
+            }
+        };
+        reader.readAsText(file);
+    });
+
+    function parseCSV(text) {
+        const lines = text.split('\n').filter(line => line.trim() !== '');
+        const headerIndex = lines.findIndex(line => line.startsWith('Step,FromPin,ToPin'));
+
+        if (headerIndex === -1) {
+            alert('Could not find the header row (Step,FromPin,ToPin,...) in the file.');
+            return;
+        }
+
+        // Parse Parameters
+        const paramsLines = lines.slice(0, headerIndex);
+        paramsDisplay.textContent = paramsLines.join('\n');
+
+        // Parse Instructions
+        headers = lines[headerIndex].split(',').map(h => h.trim());
+        const dataLines = lines.slice(headerIndex + 1);
+        
+        instructions = dataLines.map(line => {
+            // A more robust regex to handle quotes
+            const values = line.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g) || [];
+            const row = {};
+            headers.forEach((header, index) => {
+                row[header] = values[index] ? values[index].replace(/"/g, '') : '';
+            });
+            return row;
+        });
+    }
+
+    // UI Rendering
+    function renderTable() {
+        if (instructions.length === 0) return;
+
+        let tableHtml = '<div class="table-container"><table><thead><tr>';
+        headers.forEach(header => {
+            tableHtml += `<th>${header}</th>`;
+        });
+        tableHtml += '</tr></thead><tbody>';
+
+        instructions.forEach((row, index) => {
+            tableHtml += `<tr id="step-${index + 1}" data-index="${index}">`;
+            headers.forEach(header => {
+                tableHtml += `<td>${row[header] || ''}</td>`;
+            });
+            tableHtml += '</tr>';
+        });
+
+        tableHtml += '</tbody></table></div>';
+        tableArea.innerHTML = tableHtml;
+    }
+
+    function generateColumnCheckboxes() {
+        columnsToSpeakDiv.innerHTML = '';
+        headers.forEach((header, index) => {
+            const isChecked = ['ToPin'].includes(header); // Default to checking ToPin
+            columnsToSpeakDiv.innerHTML += `
+                <label>
+                    <input type="checkbox" name="speakColumn" value="${header}" ${isChecked ? 'checked' : ''}>
+                    ${header}
+                </label>
+            `;
+        });
+    }
+
+    function highlightAndScroll(index) {
+        const currentStep = index + 1;
+        // Remove highlight from previous row
+        const highlighted = document.querySelector('.highlight');
+        if (highlighted) {
+            highlighted.classList.remove('highlight');
+        }
+
+        // Add highlight to current row
+        const currentRow = document.getElementById(`step-${currentStep}`);
+        if (currentRow) {
+            currentRow.classList.add('highlight');
+            
+            // Scroll within the table container only
+            const tableContainer = document.querySelector('.table-container');
+            if (tableContainer) {
+                const containerRect = tableContainer.getBoundingClientRect();
+                const rowRect = currentRow.getBoundingClientRect();
+                
+                // Calculate the desired scroll position to center the row in the container
+                const containerCenter = containerRect.height / 2;
+                const rowCenter = rowRect.height / 2;
+                const targetScrollTop = tableContainer.scrollTop + (rowRect.top - containerRect.top) - containerCenter + rowCenter;
+                
+                // Smooth scroll to the target position
+                tableContainer.scrollTo({
+                    top: targetScrollTop,
+                    behavior: 'smooth'
+                });
+            }
+        }
+    }
+
+    // Speech Synthesis
+    function speakCurrentStep() {
+        if (synth.speaking) {
+            synth.cancel();
+        }
+
+        if (currentStepIndex >= instructions.length || currentStepIndex < 0) {
+            isPlaying = false;
+            playPauseBtn.textContent = 'Play';
+            return;
+        }
+
+        highlightAndScroll(currentStepIndex);
+
+        const stepData = instructions[currentStepIndex];
+        const checkedColumns = Array.from(document.querySelectorAll('input[name="speakColumn"]:checked'))
+            .map(cb => cb.value);
+
+        let textToSpeak = '';
+        if (checkedColumns.length > 0) {
+            const desiredOrder = ['Step', 'ColorName', 'FromPin', 'ToPin', 'ColorHex'];
+            const sortedColumns = checkedColumns.sort((a, b) => {
+                const indexA = desiredOrder.indexOf(a);
+                const indexB = desiredOrder.indexOf(b);
+                if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+                if (indexA !== -1) return -1;
+                if (indexB !== -1) return 1;
+                return 0; // Keep original order for other columns
+            });
+            textToSpeak = sortedColumns.map(col => stepData[col]).join(', ');
+        } else {
+            // If nothing is checked, maybe read the step number to give feedback
+             textToSpeak = `Step ${stepData['Step']}`;
+        }
+        
+        utterance = new SpeechSynthesisUtterance(textToSpeak);
+        utterance.onend = () => {
+            if (isPlaying && currentStepIndex < instructions.length - 1) {
+                currentStepIndex++;
+                speakCurrentStep();
+            } else {
+                 if (isPlaying) {
+                    isPlaying = false;
+                    playPauseBtn.textContent = 'Play';
+                }
+                if (recognition) {
+                    try {
+                        recognitionManuallyStopped = false;
+                        recognition.start();
+                    } catch(e) {
+                        console.error("Could not restart recognition on utterance end:", e);
+                    }
+                }
+            }
+        };
+        
+        if (recognition) {
+            recognitionManuallyStopped = true;
+            recognition.stop();
+        }
+        synth.speak(utterance);
+    }
+    
+    function setupVoiceRecognition() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            console.warn("Speech Recognition API is not supported in this browser.");
+            return;
+        }
+
+        recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = false;
+        recognition.lang = 'en-US';
+
+        recognition.onstart = () => {
+            console.log('Voice recognition started. Try saying "Next".');
+        };
+
+        recognition.onresult = (event) => {
+            const last = event.results.length - 1;
+            const command = event.results[last][0].transcript.trim().toLowerCase();
+
+            console.log('Voice command heard:', command);
+
+            if (command.includes('next')) {
+                synth.cancel();
+                nextBtn.click();
+            } else if (command.includes('repeat')) {
+                synth.cancel();
+                repeatBtn.click();
+            }
+        };
+
+        recognition.onerror = (event) => {
+            console.error('Speech recognition error:', event.error);
+        };
+
+        recognition.onend = () => {
+            console.log('Voice recognition ended.');
+            if (instructions.length > 0) {
+                setTimeout(() => {
+                    try {
+                        if (recognition && !recognitionManuallyStopped) recognition.start();
+                    } catch(e) {
+                        console.log("Could not restart recognition, likely intentional.");
+                    }
+                }, 250);
+            }
+        };
+    }
+    
+    // Playback Controls
+    playPauseBtn.addEventListener('click', () => {
+        if (instructions.length === 0) return;
+        isPlaying = !isPlaying;
+        if (isPlaying) {
+            playPauseBtn.textContent = 'Pause';
+            speakCurrentStep();
+        } else {
+            playPauseBtn.textContent = 'Play';
+            synth.cancel();
+        }
+    });
+
+    nextBtn.addEventListener('click', () => {
+        if (currentStepIndex < instructions.length - 1) {
+            currentStepIndex++;
+            speakCurrentStep();
+        }
+    });
+
+    prevBtn.addEventListener('click', () => {
+        if (currentStepIndex > 0) {
+            currentStepIndex--;
+            speakCurrentStep();
+        }
+    });
+
+    repeatBtn.addEventListener('click', () => {
+        speakCurrentStep();
+    });
+
+    // Table row navigation
+    tableArea.addEventListener('click', (event) => {
+        const row = event.target.closest('tr');
+        if (!row || !row.dataset.index) return;
+
+        const newIndex = parseInt(row.dataset.index, 10);
+        if (!isNaN(newIndex)) {
+            currentStepIndex = newIndex;
+            highlightAndScroll(currentStepIndex);
+            if (isPlaying) {
+                speakCurrentStep();
+            }
+        }
+    });
+
+    // Initial state
+    resetState();
+    setupVoiceRecognition();
+});
+</script>
+
+</body>
+</html>
